@@ -212,3 +212,6 @@ outputs/
 *.jpg
 *.jpeg
 *.gif
+
+# Data
+data/
