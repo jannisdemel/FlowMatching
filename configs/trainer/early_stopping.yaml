@@ -1,0 +1,24 @@
+_target_: pytorch_lightning.trainer.Trainer
+  
+max_epochs: 500
+accelerator: auto
+devices: 1
+log_every_n_steps: 50
+default_root_dir: ./outputs
+
+# instantiate a TensorBoard logger and pass it to Trainer
+logger:
+  _target_: pytorch_lightning.loggers.TensorBoardLogger
+  save_dir: ${hydra:runtime.cwd}/outputs
+  name: 2d gaussian
+
+# pass the callbacks to Trainer
+callbacks:
+  - _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: val_loss
+    mode: min
+    patience: 5
+    min_delta: 0.0
+
+
+  
