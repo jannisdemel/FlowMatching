@@ -1,0 +1,32 @@
+_target_: pytorch_lightning.trainer.Trainer
+  
+max_epochs: 500
+accelerator: auto
+devices: 1
+log_every_n_steps: 50
+default_root_dir: ./outputs
+
+# instantiate a TensorBoard logger and pass it to Trainer
+logger:
+  _target_: pytorch_lightning.loggers.TensorBoardLogger
+  save_dir: ${hydra:runtime.cwd}/outputs
+  name: 2d gaussian
+
+# pass the callbacks to Trainer
+callbacks:
+  - _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: val_loss
+    mode: min
+    patience: 10
+    min_delta: 0.0
+  - _target_: cfm.sampling.SamplingGifCallback
+    n_samples: 2048
+    n_steps: 100
+    every_n_epochs: 1
+    fig_size: [5, 5]
+    dpi: 120
+    out_dir: "sampling_plots"
+    gif_name: "rf_training.gif"
+    fps: 5
+    xlim: [-3, 3]
+    ylim: [-3, 3]

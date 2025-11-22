@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
+from cfm.data import sample_from_cfg
 
 
 
@@ -92,7 +93,8 @@ class MLP_with_time(pl.LightningModule):
         t_emb = self.time_embedding(t.unsqueeze(-1))         # [B, emb_dim]
         # concat along feature dimension
         h = torch.cat([x_t, t_emb], dim=-1)    # [B, data_dim + emb_dim]
-        return self.model(h)                   # [B, data_dim]
+        return self.model(h)                  # [B, data_dim]
+
 
     def training_step(self, batch, batch_idx):
         """
@@ -135,6 +137,43 @@ class MLP_with_time(pl.LightningModule):
         v_pred = self(x_t, t)
         loss = F.mse_loss(v_pred, v_target)
         self.log("val_loss", loss, prog_bar=True)
+    
+    @torch.no_grad()
+    def sample_flow(
+        self,
+        n_samples: int,
+        source_cfg: dict,
+        n_steps: int = 100,
+        device: torch.device | None = None,
+    ) -> torch.Tensor:
+        """
+        Sample from the *learned* flow: source -> target.
+
+        Args:
+            n_samples: number of samples
+            source_cfg: config dict for the source distribution
+            n_steps: number of Euler steps in [0,1]
+        Returns:
+            x_T: [n_samples, data_dim] samples approximating target dist
+        """
+        if device is None:
+            device = self.device
+
+        self.eval()
+
+        # x0 ~ source distribution
+        x = sample_from_cfg(n_samples, source_cfg, device=device)  # [N, data_dim]
+
+        t0, t1 = 0.0, 1.0
+        dt = (t1 - t0) / n_steps
+
+        for k in range(n_steps):
+            t_k = t0 + (k + 0.5) * dt
+            t = torch.full((n_samples,), t_k, device=device)  # [N]
+            v = self(x, t)                                   # [N, data_dim]
+            x = x + dt * v
+
+        return x  # approximate target samples
 
     def configure_optimizers(self):
         return torch.optim.Adam(
