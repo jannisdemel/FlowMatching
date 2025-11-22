@@ -216,3 +216,4 @@ outputs/
 # Data
 data/
 lightning_logs/
+.DS_Store
