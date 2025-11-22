@@ -1,0 +1,12 @@
+_target_ : cfm.model.MLP_with_time
+data_dim: 2
+time_embedding: 
+  _target_ : cfm.model.FullyConnectedMLP
+  in_dim: 1
+  out_dim: 64
+  hidden_dim: 64
+  n_hidden_layers: 1
+lr: 1e-3
+weight_decay: 0.0
+hidden_dim: 128
+n_hidden_layers: 2

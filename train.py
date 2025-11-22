@@ -12,7 +12,6 @@ def main(cfg: DictConfig):
     model = instantiate(cfg.model)
     trainer = instantiate(cfg.trainer)
     trainer.fit(model, datamodule=datamodule)
-    trainer.test(model, datamodule=datamodule)
 
 if __name__ == "__main__":
     main()

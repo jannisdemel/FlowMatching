@@ -1,6 +1,7 @@
 defaults:
-  - model: lenet
-  - data: mnist
+  - _self_
+  - model: mlp_with_time
+  - data: 2d_distributions
   - trainer: default
 
 seed: 42
